@@ -19,8 +19,7 @@ module Spree
     validates :variant, presence: true
     validates :quantity, numericality: {
       only_integer: true,
-      greater_than: -1,
-      message: Spree.t('validation.must_be_int')
+      greater_than: -1
     }
     validates :price, numericality: true
 
