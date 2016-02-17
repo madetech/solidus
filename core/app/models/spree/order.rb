@@ -31,7 +31,7 @@ module Spree
     self.whitelisted_ransackable_attributes =  %w[completed_at created_at email number state payment_state shipment_state total]
 
     attr_reader :coupon_code
-    attr_accessor :temporary_address, :temporary_credit_card
+    attr_accessor :encrypted_card_data, :temporary_address, :temporary_credit_card
 
     belongs_to :user, class_name: Spree::UserClassHandle.new
     belongs_to :created_by, class_name: Spree::UserClassHandle.new
