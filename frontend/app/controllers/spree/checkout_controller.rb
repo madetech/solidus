@@ -70,7 +70,7 @@ module Spree
       return if source.blank?
 
       @order.encrypted_card_data = {
-        "#{payment_params[:payment_method_id]}": source[:encrypted_data]
+        :"#{payment_params[:payment_method_id]}" => source[:encrypted_data]
       }
     end
 
