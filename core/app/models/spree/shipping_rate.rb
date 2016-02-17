@@ -22,16 +22,25 @@ module Spree
     money_methods :amount
 
     def display_price
-      price = display_amount.to_s
-
-      return price if taxes.empty? || amount == 0
-
-      tax_explanations = taxes.map(&:label).join(tax_label_separator)
-
-      Spree.t :display_price_with_explanations,
-               scope: 'shipping_rate.display_price',
-               price: price,
-               explanations: tax_explanations
+      price = display_base_price.to_s
+      if tax_rate && tax_rate.show_rate_in_label?
+        tax_amount = calculate_tax_amount
+        if tax_amount != 0
+          if tax_rate.included_in_price?
+            if tax_amount > 0
+              amount = "#{display_tax_amount(tax_amount)} #{tax_rate.name}"
+              price += " (#{Spree.t(:incl)} #{amount})"
+            else
+              amount = "#{display_tax_amount(tax_amount*-1)} #{tax_rate.name}"
+              price += " (#{Spree.t(:excl)} #{amount})"
+            end
+          else
+            amount = "#{display_tax_amount(tax_amount)} #{tax_rate.name}"
+            price += " (+ #{amount})"
+          end
+        end
+      end
+      price
     end
     alias_method :display_cost, :display_price
 

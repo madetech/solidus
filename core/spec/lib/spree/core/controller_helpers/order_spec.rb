@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'spree/testing_support/order_walkthrough'
 
 class FakesController < ApplicationController
   include Spree::Core::ControllerHelpers::Order
@@ -94,5 +95,45 @@ describe Spree::Core::ControllerHelpers::Order, type: :controller do
     it 'returns remote ip' do
       expect(controller.ip_address).to eq request.remote_ip
     end
+  end
+
+  describe '#persist_sensitive_payment_details' do
+    let(:payment_method) { create(:payment_method) }
+    let(:order) { OrderWalkthrough.up_to(:payment) }
+    let(:order_params) do
+      { order: {
+          payments_attributes: [
+            { payment_method_id: payment_method.id,
+              source_attributes: {
+                encrypted_data: 'TEST'
+              }
+            }
+          ]
+        }
+      }
+    end
+
+    let(:expect_return) do
+      {:"#{payment_method.id}" => 'TEST'}
+    end
+
+    before do
+      allow(controller).to receive_messages(params: order_params)
+      controller.instance_variable_set(:@order, order)
+    end
+
+    subject { controller.send(:persist_sensitive_payment_details) }
+
+    it { is_expected.to match(expect_return) }
+
+    context 'when the params are empty' do
+      let(:order_params) do
+        { }
+      end
+
+      let(:expect_return) { nil }
+    end
+
+    it { is_expected.to match(expect_return) }
   end
 end

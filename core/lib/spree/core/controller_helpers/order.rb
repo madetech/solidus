@@ -96,6 +96,24 @@ module Spree
 
           order
         end
+
+        def payment_params
+          params[:order] &&
+          params[:order][:payments_attributes] &&
+          params[:order][:payments_attributes].first
+        end
+
+        def persist_sensitive_payment_details
+          return if payment_params.blank?
+
+          source = payment_params[:source_attributes]
+
+          return if source.blank?
+
+          @order.encrypted_card_data = {
+            :"#{payment_params[:payment_method_id]}" => source[:encrypted_data]
+          }
+        end
       end
     end
   end

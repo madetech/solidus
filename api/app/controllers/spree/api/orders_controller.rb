@@ -27,7 +27,7 @@ module Spree
 
       def create
         authorize! :create, Order
-        @order = Spree::Core::Importer::Order.import(determine_order_user, order_params)
+        @order = Spree::Core::Importer::Order.import(determine_order_user, apply_store_id(order_params))
         respond_with(@order, default_template: :show, status: 201)
       end
 
@@ -92,6 +92,12 @@ module Spree
       end
 
       private
+
+      def apply_store_id(params)
+        return params if params.has_key?(:store_id)
+        
+        params.merge!(store_id: current_store.id)
+      end
 
       def order_params
         if params[:order]

@@ -84,37 +84,52 @@ module Spree
       redirect_to checkout_state_path(@order.state)
     end
 
-    def update_params
-      if update_params = massaged_params[:order]
-        update_params.permit(permitted_checkout_attributes)
-      else
-        # We current allow update requests without any parameters in them.
-        {}
-      end
+      def payment_params
+      payment_params = params[:order] &&
+                       params[:order][:payments_attributes] &&
+                       params[:order][:payments_attributes].first
     end
+
+    def persist_sensitive_payment_details
+      return if payment_params.blank?
+
+      source = payment_params[:source_attributes]
+
+      return if source.blank?
+
+      @order.encrypted_card_data = {
+        :"#{payment_params[:payment_method_id]}" => source[:encrypted_data]
+      }
+    enddef update_params
+        if update_params = massaged_params[:order]
+          update_params.permit(permitted_checkout_attributes)
+        else
+          # We current allow update requests without any parameters in them.
+          {}
+        end
+      end
 
     def massaged_params
       massaged_params = params.deep_dup
 
-      move_payment_source_into_payments_attributes(massaged_params)
-      if massaged_params[:order] && massaged_params[:order][:existing_card].present?
-        Spree::Deprecation.warn("Passing order[:existing_card] is deprecated. Send order[:wallet_payment_source_id] instead.", caller)
-        move_existing_card_into_payments_attributes(massaged_params) # deprecated
+        move_payment_source_into_payments_attributes(massaged_params)
+        if massaged_params[:order] && massaged_params[:order][:existing_card].present?
+        Spree::Deprecation.warn("Passing order[:existing_card] is deprecated. Send order[:wallet_payment_source_id] instead.", caller)move_existing_card_into_payments_attributes(massaged_params)# deprecated
       end
       move_wallet_payment_source_id_into_payments_attributes(massaged_params)
-      set_payment_parameters_amount(massaged_params, @order)
+        set_payment_parameters_amount(massaged_params, @order)
 
       massaged_params
     end
 
-    def ensure_valid_state
-      unless skip_state_validation?
-        if (params[:state] && !@order.has_checkout_step?(params[:state])) ||
-          (!params[:state] && !@order.has_checkout_step?(@order.state))
-          @order.state = 'cart'
-          redirect_to checkout_state_path(@order.checkout_steps.first)
+      def ensure_valid_state
+        unless skip_state_validation?
+          if (params[:state] && !@order.has_checkout_step?(params[:state])) ||
+             (!params[:state] && !@order.has_checkout_step?(@order.state))
+            @order.state = 'cart'
+            redirect_to checkout_state_path(@order.checkout_steps.first)
+          end
         end
-      end
 
       # Fix for https://github.com/spree/spree/issues/4117
       # If confirmation of payment fails, redirect back to payment screen
@@ -152,13 +167,12 @@ module Spree
       redirect_to spree.cart_path if @order.completed?
     end
 
-    def ensure_sufficient_stock_lines
-      if @order.insufficient_stock_lines.present?
-        out_of_stock_items = @order.insufficient_stock_lines.collect(&:name).to_sentence
-        flash[:error] = Spree.t(:inventory_error_flash_for_insufficient_quantity, names: out_of_stock_items)
-        redirect_to spree.cart_path
+      def ensure_sufficient_stock_lines
+        if @order.insufficient_stock_lines.present?
+          out_of_stock_items = @order.insufficient_stock_lines.collect(&:name).to_sentenceflash[:error] = Spree.t(:inventory_error_flash_for_insufficient_quantity, names: out_of_stock_items)
+          redirect_to spree.cart_path
+        end
       end
-    end
 
     # Provides a route to redirect after order completion
     def completion_route
@@ -173,7 +187,7 @@ module Spree
     def before_address
       # if the user has a default address, a callback takes care of setting
       # that; but if he doesn't, we need to build an empty one here
-      default = {country_id: Spree::Country.default.id}
+      default = { country_id: Spree::Country.default.id }
       @order.build_bill_address(default) unless @order.bill_address
       @order.build_ship_address(default) if @order.checkout_steps.include?('delivery') && !@order.ship_address
     end

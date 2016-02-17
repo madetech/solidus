@@ -47,7 +47,7 @@ module Spree
     self.whitelisted_ransackable_attributes = %w[completed_at created_at email number state payment_state shipment_state total store_id]
 
     attr_reader :coupon_code
-    attr_accessor :temporary_address
+    attr_accessor :encrypted_card_data, :temporary_address
 
     attr_accessor :temporary_payment_source
     alias_method :temporary_credit_card, :temporary_payment_source

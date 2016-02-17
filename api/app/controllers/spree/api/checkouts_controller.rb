@@ -22,6 +22,9 @@ module Spree
           return
         end
         authorize! :update, @order, order_token
+
+        persist_sensitive_payment_details
+
         @order.next!
         respond_with(@order, default_template: 'spree/api/orders/show', status: 200)
       rescue StateMachines::InvalidTransition => e
@@ -57,6 +60,8 @@ module Spree
           end
 
           return if after_update_attributes
+
+          persist_sensitive_payment_details
 
           if @order.completed? || @order.next
             state_callback(:after)
