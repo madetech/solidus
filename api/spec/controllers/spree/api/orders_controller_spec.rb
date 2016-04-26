@@ -52,7 +52,7 @@ module Spree
         it "does not include unpermitted params, or allow overriding the user", focus: true do
           expect(Spree::Core::Importer::Order).to receive(:import).
             once.
-            with(current_api_user, { "email" => target_user.email }).
+            with(current_api_user, { "email" => target_user.email, "store_id" => Store.default }).
             and_call_original
           subject
         end
@@ -66,7 +66,10 @@ module Spree
         it "it permits all params and allows overriding the user" do
           expect(Spree::Core::Importer::Order).to receive(:import).
             once.
-            with(target_user, { "user_id" => target_user.id, "created_at" => date_override, "email" => target_user.email}).
+            with(target_user, { "user_id" => target_user.id,
+                                "created_at" => date_override,
+                                "email" => target_user.email,
+                                "store_id" => Store.default }).
             and_call_original
           subject
         end
