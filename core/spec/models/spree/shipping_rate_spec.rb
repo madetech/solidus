@@ -28,6 +28,14 @@ describe Spree::ShippingRate, :type => :model do
           expect(shipping_rate.display_price.to_s).to eq("$10.00 (incl. $0.91 #{tax_rate.name})")
         end
 
+        context "when #show_rate_in_label is false" do
+          before { tax_rate.update_attribute(:show_rate_in_label, false) }
+
+          it "shows no tax amount" do
+            expect(shipping_rate.display_price.to_s).to eq("$10.00")
+          end
+        end
+
         context "when cost is zero" do
           before do
             shipping_rate.cost = 0
