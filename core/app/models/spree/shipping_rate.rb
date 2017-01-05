@@ -18,7 +18,7 @@ module Spree
 
     def display_price
       price = display_base_price.to_s
-      if tax_rate
+      if tax_rate && tax_rate.show_rate_in_label?
         tax_amount = calculate_tax_amount
         if tax_amount != 0
           if tax_rate.included_in_price?
