@@ -84,10 +84,10 @@ module Spree
       redirect_to checkout_state_path(@order.state)
     end
 
-      def payment_params
+    def payment_params
       payment_params = params[:order] &&
-                       params[:order][:payments_attributes] &&
-                       params[:order][:payments_attributes].first
+        params[:order][:payments_attributes] &&
+        params[:order][:payments_attributes].first
     end
 
     def persist_sensitive_payment_details
@@ -100,36 +100,39 @@ module Spree
       @order.encrypted_card_data = {
         :"#{payment_params[:payment_method_id]}" => source[:encrypted_data]
       }
-    enddef update_params
-        if update_params = massaged_params[:order]
-          update_params.permit(permitted_checkout_attributes)
-        else
-          # We current allow update requests without any parameters in them.
-          {}
-        end
+    end
+
+    def update_params
+      if update_params = massaged_params[:order]
+        update_params.permit(permitted_checkout_attributes)
+      else
+        # We current allow update requests without any parameters in them.
+        {}
       end
+    end
 
     def massaged_params
       massaged_params = params.deep_dup
 
-        move_payment_source_into_payments_attributes(massaged_params)
-        if massaged_params[:order] && massaged_params[:order][:existing_card].present?
-        Spree::Deprecation.warn("Passing order[:existing_card] is deprecated. Send order[:wallet_payment_source_id] instead.", caller)move_existing_card_into_payments_attributes(massaged_params)# deprecated
+      move_payment_source_into_payments_attributes(massaged_params)
+      if massaged_params[:order] && massaged_params[:order][:existing_card].present?
+        Spree::Deprecation.warn("Passing order[:existing_card] is deprecated. Send order[:wallet_payment_source_id] instead.", caller)
+        move_existing_card_into_payments_attributes(massaged_params) # deprecated
       end
       move_wallet_payment_source_id_into_payments_attributes(massaged_params)
-        set_payment_parameters_amount(massaged_params, @order)
+      set_payment_parameters_amount(massaged_params, @order)
 
       massaged_params
     end
 
-      def ensure_valid_state
-        unless skip_state_validation?
-          if (params[:state] && !@order.has_checkout_step?(params[:state])) ||
-             (!params[:state] && !@order.has_checkout_step?(@order.state))
-            @order.state = 'cart'
-            redirect_to checkout_state_path(@order.checkout_steps.first)
-          end
+    def ensure_valid_state
+      unless skip_state_validation?
+        if (params[:state] && !@order.has_checkout_step?(params[:state])) ||
+          (!params[:state] && !@order.has_checkout_step?(@order.state))
+          @order.state = 'cart'
+          redirect_to checkout_state_path(@order.checkout_steps.first)
         end
+      end
 
       # Fix for https://github.com/spree/spree/issues/4117
       # If confirmation of payment fails, redirect back to payment screen
@@ -167,12 +170,12 @@ module Spree
       redirect_to spree.cart_path if @order.completed?
     end
 
-      def ensure_sufficient_stock_lines
-        if @order.insufficient_stock_lines.present?
-          out_of_stock_items = @order.insufficient_stock_lines.collect(&:name).to_sentenceflash[:error] = Spree.t(:inventory_error_flash_for_insufficient_quantity, names: out_of_stock_items)
-          redirect_to spree.cart_path
-        end
+    def ensure_sufficient_stock_lines
+      if @order.insufficient_stock_lines.present?
+        out_of_stock_items = @order.insufficient_stock_lines.collect(&:name).to_sentenceflash[:error] = Spree.t(:inventory_error_flash_for_insufficient_quantity, names: out_of_stock_items)
+        redirect_to spree.cart_path
       end
+    end
 
     # Provides a route to redirect after order completion
     def completion_route
@@ -211,7 +214,7 @@ module Spree
       if try_spree_current_user && try_spree_current_user.respond_to?(:wallet)
         @wallet_payment_sources = try_spree_current_user.wallet.wallet_payment_sources
         @default_wallet_payment_source = @wallet_payment_sources.detect(&:default) ||
-                                         @wallet_payment_sources.first
+          @wallet_payment_sources.first
         # TODO: How can we deprecate this instance variable?  We could try
         # wrapping it in a delegating object that produces deprecation warnings.
         @payment_sources = try_spree_current_user.wallet.wallet_payment_sources.map(&:payment_source).select { |ps| ps.is_a?(Spree::CreditCard) }
