@@ -599,6 +599,12 @@ module Spree
             expect(json_response['display_ship_total']).to eq '$10.00'
           end
 
+          it "includes the store id" do
+            api_get :show, id: order.to_param
+
+            expect(json_response['store_id']).to eq Store.default.id
+          end
+
           it "returns available shipments for an order" do
             api_get :show, :id => order.to_param
             expect(response.status).to eq(200)
