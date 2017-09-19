@@ -7,3 +7,4 @@ node(:display_ship_total) { |o| o.display_ship_total }
 node(:display_tax_total) { |o| o.display_tax_total }
 node(:token) { |o| o.guest_token }
 node(:checkout_steps) { |o| o.checkout_steps }
+node(:store_id) { |o| o.store_id }
